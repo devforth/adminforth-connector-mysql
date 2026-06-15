@@ -75,6 +75,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       sampleValue: sampleRow[col.COLUMN_NAME],
     }));
   }
+  
 
   async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
 

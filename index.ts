@@ -3,7 +3,7 @@ import utc from 'dayjs/plugin/utc.js';
 import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, AdminForthBaseConnector } from 'adminforth';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from 'adminforth';
 import mysql from 'mysql2/promise';
-import { dbLogger, afLogger } from 'adminforth';
+import { dbLogger, afLogger, checkIfFieldIsInsideResourceColumns } from 'adminforth';
 
 dayjs.extend(utc);
 
@@ -469,6 +469,10 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     const tableName = resource.table;
     
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
+
+    if (sort.some(s => !checkIfFieldIsInsideResourceColumns(s.field, resource))) {
+      throw new Error(`Invalid sort field: ${sort.find(s => !checkIfFieldIsInsideResourceColumns(s.field, resource))?.field}`);
+    }
 
     const orderBy = sort.length ? `ORDER BY ${sort.map((s: { field: string; direction: AdminForthSortDirections }) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
     let selectQuery = `SELECT ${selectedColumns} FROM ${tableName}`;

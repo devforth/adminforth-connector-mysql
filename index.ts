@@ -77,6 +77,17 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   }
   
 
+  async isDatabaseEmpty(): Promise<boolean> {
+    const [rows] = await this.client.execute(`
+      SELECT table_schema, table_name
+      FROM information_schema.tables
+      WHERE table_schema = DATABASE()
+        AND table_type = 'BASE TABLE'
+      LIMIT 1
+    `);
+    return rows.length === 0;
+  }
+
   async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
 
     const cascadeColumn = resource.columns.find(c => c.foreignResource?.onDelete === 'cascade');
